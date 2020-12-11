@@ -1,0 +1,67 @@
+version: '3'
+services:
+
+  nodeone:
+    build:
+      context: infra/Ethereum-Private-Network-POA/
+      dockerfile: master.Dockerfile
+    command: >
+      bash -c "./eth_common/setup_master 2> /dev/null
+      && geth --networkid 15 --allow-insecure-unlock --unlock '0x0c1c28336F5F256bD6657215F00eE83121e51336' --password eth_common/password --mine --miner.gasprice=0 --rpc --rpcapi="admin,db,miner,eth,debug,personal,net,shh,txpool,web3" --rpcaddr="0.0.0.0" --rpcport=8545 --rpccorsdomain="*" --rpcvhosts="*" --shh  --ws --wsaddr="0.0.0.0" --wsport=8546 --wsapi="admin,db,miner,eth,debug,personal,net,shh,txpool,web3" --wsorigins="*" --syncmode 'full' --debug --identity=NODE_ONE"
+    restart: on-failure
+    environment:
+      VIRTUAL_HOST: nodeone.docker
+    ports:
+      - 8546:8546
+      - 8545:8545
+    tty: true
+    networks:
+      - lc1-net
+
+  runner-api:
+    build:
+      context: ./
+      dockerfile: dev.Dockerfile
+    command: npm run dev
+    volumes:
+      - ./build:/app/build:delegated
+      - ./src:/app/src:delegated
+      - ./src/config:/src/config:delegated
+      - ./package.json:/app/package.json:delegated
+    depends_on:
+      - nodeone
+    ports:
+      - 3001:3001
+    environment:
+      VIRTUAL_HOST: taxwave-api.LC1.docker
+    networks:
+      - lc1-net
+
+
+  truffle:
+    image: ajmay/truffle:5.0.9
+    volumes:
+      - ./truffle/package-lock.json:/truffle/package-lock.json:delegated
+      - ./truffle/package.json:/truffle/package.json:delegated
+      - ./contracts:/truffle/contracts:delegated
+      - ./migrations:/truffle/migrations:delegated
+      - ./build/contracts:/truffle/build/contracts:cached
+    environment:
+      SOLC_VERSION: '0.5.8'
+      ETH_HOST: nodeone
+      ETH_PORT: 8545
+      ETH_GAS: 6000000
+      ETH_GAS_PRICE: 20000000000
+      TRUFFLE_NETWORK_ID: '*'
+      HASH_TYPE: 'mimc'
+    logging:
+      options:
+        max-size: 10m
+    networks:
+      - lc1-net
+
+
+
+networks:
+  lc1-net:
+    external: true

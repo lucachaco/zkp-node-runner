@@ -1,0 +1,11 @@
+#!/bin/bash
+cp /home/eth_user/eth_common/UTC--2020-01-30T21-09-36.367929123Z--8ea2c8718921e1a71c9ad3640437a813bbf741b2 /home/eth_user/.ethereum/keystore
+cd /home/eth_user/.ethereum/keystore/
+number=`ls -ltr |wc -l`
+shopt -s extglob
+if [ $number -gt 3 ] || [ $number -eq 3 ]
+then
+  rm -v !(@("UTC--2020-01-30T21-09-36.367929123Z--8ea2c8718921e1a71c9ad3640437a813bbf741b2"))
+fi
+
+

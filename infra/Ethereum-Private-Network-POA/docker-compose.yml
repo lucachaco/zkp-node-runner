@@ -1,0 +1,85 @@
+version: '2'
+
+services:
+  bootnode:
+    image: taxwavecontainer.azurecr.io/eth_bootnode
+    networks:
+      ETH:
+        ipv4_address: 172.16.26.4 
+    command: bootnode -nodekey eth_common/bootnode.key -verbosity 9 -addr 172.16.26.4:30301
+    restart: on-failure
+    environment:
+      VIRTUAL_HOST: bootnode.docker
+    ports:
+      - 30301:30301
+    tty: true
+
+  nodeone:
+    image: taxwavecontainer.azurecr.io/eth_node
+    networks:
+      - ETH
+    command: >
+        bash -c "./eth_common/setup_master 2> /dev/null
+        &&  geth --identity="NODE_ONE" --ipcpath geth01 --rpcapi admin,db,miner,eth,debug,personal,net,shh,txpool,web3 --verbosity=1 --mine --minerthreads=1 --port 30303 --networkid 1234 --rpc --rpcport 8545 --rpccorsdomain "*" --rpcaddr 0.0.0.0 --bootnodes "enode://40803a7f88b884fb695ad0864651bc7312ca264a59b2c42a042421c738493f44a3ff60f2a7d518e21de5dbc03e5abb5a99a607bc4392aaeac278752b35fc0f6a@172.16.26.4:30301" --syncmode 'full' --allow-insecure-unlock --unlock '0x0c1c28336F5F256bD6657215F00eE83121e51336' --password eth_common/password console"
+    restart: on-failure
+    environment:
+      VIRTUAL_HOST: nodeone.docker
+    ports:
+      - 30303:30303
+      - 8545:8545
+    tty: true
+
+  nodetwo:
+    image: taxwavecontainer.azurecr.io/eth_node
+    networks:
+      - ETH
+    command: >
+        bash -c "./eth_common/setup_node 2> /dev/null
+        &&  geth --identity="NODE_TWO" --ipcpath geth02 --rpcapi admin,db,miner,eth,debug,personal,net,shh,txpool,web3 --verbosity=1 --mine --minerthreads=1 --port 30304 --networkid 1234 --rpc --rpcport 8546 --rpccorsdomain "*" --rpcaddr 0.0.0.0 --bootnodes "enode://40803a7f88b884fb695ad0864651bc7312ca264a59b2c42a042421c738493f44a3ff60f2a7d518e21de5dbc03e5abb5a99a607bc4392aaeac278752b35fc0f6a@172.16.26.4:30301" --syncmode 'full' --allow-insecure-unlock console"
+    restart: on-failure
+    environment:
+      VIRTUAL_HOST: nodetwo.docker
+    ports:
+      - 30304:30304
+      - 8546:8546
+    tty: true
+ 
+  nodethree:
+    image: taxwavecontainer.azurecr.io/eth_node
+    networks:
+      - ETH
+    command: >
+        bash -c "./eth_common/setup_node 2> /dev/null
+        &&  geth --identity="NODE_THREE" --ipcpath geth03 --rpcapi admin,db,miner,eth,debug,personal,net,shh,txpool,web3 --verbosity=1 --mine --minerthreads=1 --port 30305 --networkid 1234 --rpc --rpcport 8547 --rpccorsdomain "*" --rpcaddr 0.0.0.0 --bootnodes "enode://40803a7f88b884fb695ad0864651bc7312ca264a59b2c42a042421c738493f44a3ff60f2a7d518e21de5dbc03e5abb5a99a607bc4392aaeac278752b35fc0f6a@172.16.26.4:30301" --syncmode 'full' --allow-insecure-unlock console"
+    restart: on-failure
+    environment:
+      VIRTUAL_HOST: nodethree.docker
+    ports:
+      - 30305:30305
+      - 8547:8547
+    tty: true
+
+  nodefour:
+    image: taxwavecontainer.azurecr.io/eth_node
+    networks:
+      - ETH
+    command: >
+        bash -c "./eth_common/setup_node 2> /dev/null
+        &&  geth --identity="NODE_four" --ipcpath geth04 --rpcapi admin,db,miner,eth,debug,personal,net,shh,txpool,web3 --verbosity=1 --mine --minerthreads=1 --port 30306 --networkid 1234 --rpc --rpcport 8548 --rpccorsdomain "*" --rpcaddr 0.0.0.0 --bootnodes "enode://40803a7f88b884fb695ad0864651bc7312ca264a59b2c42a042421c738493f44a3ff60f2a7d518e21de5dbc03e5abb5a99a607bc4392aaeac278752b35fc0f6a@172.16.26.4:30301" --syncmode 'full' --allow-insecure-unlock console"
+    restart: on-failure
+    environment:
+      VIRTUAL_HOST: nodefour.docker
+    ports:
+      - 30306:30306
+      - 8548:8548
+    tty: true
+
+
+networks:
+  ETH:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.26.0/24
+          gateway: 172.16.26.1

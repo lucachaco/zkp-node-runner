@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd /home/eth_user/.ethereum/keystore/
+number=`ls -ltr |wc -l`
+shopt -s extglob
+if [ $number -gt 3 ] || [ $number -eq 3 ]
+then
+  rm -v !(@("UTC--2019-09-09T22-13-02.168739674Z--0c1c28336f5f256bd6657215f00ee83121e51336"))
+fi
+
